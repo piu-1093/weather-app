@@ -58,7 +58,7 @@ async function updateWeatherInfo(city){
         showDisplaySelection(notFoundSelection);
         return;
     }
-    console.log(weatherData);
+    // console.log(weatherData);
 
     const {
         name: country,
@@ -80,22 +80,33 @@ async function updateWeatherInfo(city){
     showDisplaySelection(weatherInfoSelection);
 };
 
-async function updateForecastInfo(city){
-    const forecastsData = await getFetchData('forecast', city);
 
-    const timeTaken = '12:00:00';
+async function updateForecastInfo(city) {
+    const forecastsData = await getFetchData('forecast', city);
     const todayDate = new Date().toISOString().split('T')[0];
+    const forecastMap = new Map(); 
+
+    for (const forecast of forecastsData.list) {
+        const [date, time] = forecast.dt_txt.split(' ');
+        if (date === todayDate) continue;  
+
+        if (!forecastMap.has(date) || time === "12:00:00") {
+            forecastMap.set(date, forecast);
+        }
+
+        if (forecastMap.size === 5) break;
+    }
 
     forecastItemsContainer.innerHTML = '';
-    forecastsData.list.forEach(forecastWeather => {
-        if(forecastWeather.dt_txt.includes(timeTaken) && !forecastWeather.dt_txt.includes(todayDate)){
-            updateForecastItems(forecastWeather);
-        }
-    })
-};
+
+    for (const forecast of forecastMap.values()) {
+        updateForecastItems(forecast);
+    }
+}
+
 
 function updateForecastItems(weatherData){
-    console.log(weatherData);
+    // console.log(weatherData);
     const{
         dt_txt: date, 
         weather: [{id, icon}],
